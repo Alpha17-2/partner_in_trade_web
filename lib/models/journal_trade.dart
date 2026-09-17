@@ -28,8 +28,13 @@ class JournalTrade {
     this.mfe,
     this.rMultiple,
     this.strategy,
+    this.setup,
     this.tags = const [],
+    this.emotion,
+    this.confidence,
+    this.mistake,
     this.notes,
+    this.slippage,
     required this.status,
     this.source = 'delta',
     required this.productId,
@@ -60,10 +65,89 @@ class JournalTrade {
   final double? mfe;
   final double? rMultiple;
   final String? strategy;
+  final String? setup;
   final List<String> tags;
+  final String? emotion;
+  final int? confidence;
+  final String? mistake;
   final String? notes;
+  final double? slippage;
   final JournalTradeStatus status;
   final String source;
+
+  JournalTrade copyWith({
+    String? id,
+    int? productId,
+    String? symbol,
+    JournalTradeSide? side,
+    DateTime? entryTime,
+    DateTime? exitTime,
+    double? entryPrice,
+    double? exitPrice,
+    double? quantity,
+    double? averageEntryPrice,
+    double? averageExitPrice,
+    double? stopLoss,
+    double? takeProfit,
+    double? grossPnl,
+    double? fees,
+    double? funding,
+    double? netPnl,
+    Duration? duration,
+    double? leverage,
+    List<String>? orderIds,
+    List<String>? fillIds,
+    double? mae,
+    double? mfe,
+    double? rMultiple,
+    String? strategy,
+    String? setup,
+    List<String>? tags,
+    String? emotion,
+    int? confidence,
+    String? mistake,
+    String? notes,
+    double? slippage,
+    JournalTradeStatus? status,
+    String? source,
+  }) {
+    return JournalTrade(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      symbol: symbol ?? this.symbol,
+      side: side ?? this.side,
+      entryTime: entryTime ?? this.entryTime,
+      exitTime: exitTime ?? this.exitTime,
+      entryPrice: entryPrice ?? this.entryPrice,
+      exitPrice: exitPrice ?? this.exitPrice,
+      quantity: quantity ?? this.quantity,
+      averageEntryPrice: averageEntryPrice ?? this.averageEntryPrice,
+      averageExitPrice: averageExitPrice ?? this.averageExitPrice,
+      stopLoss: stopLoss ?? this.stopLoss,
+      takeProfit: takeProfit ?? this.takeProfit,
+      grossPnl: grossPnl ?? this.grossPnl,
+      fees: fees ?? this.fees,
+      funding: funding ?? this.funding,
+      netPnl: netPnl ?? this.netPnl,
+      duration: duration ?? this.duration,
+      leverage: leverage ?? this.leverage,
+      orderIds: orderIds ?? this.orderIds,
+      fillIds: fillIds ?? this.fillIds,
+      mae: mae ?? this.mae,
+      mfe: mfe ?? this.mfe,
+      rMultiple: rMultiple ?? this.rMultiple,
+      strategy: strategy ?? this.strategy,
+      setup: setup ?? this.setup,
+      tags: tags ?? this.tags,
+      emotion: emotion ?? this.emotion,
+      confidence: confidence ?? this.confidence,
+      mistake: mistake ?? this.mistake,
+      notes: notes ?? this.notes,
+      slippage: slippage ?? this.slippage,
+      status: status ?? this.status,
+      source: source ?? this.source,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -91,8 +175,13 @@ class JournalTrade {
         'mfe': mfe,
         'rMultiple': rMultiple,
         'strategy': strategy,
+        'setup': setup,
         'tags': tags,
+        'emotion': emotion,
+        'confidence': confidence,
+        'mistake': mistake,
         'notes': notes,
+        'slippage': slippage,
         'status': status.name,
         'source': source,
       };
@@ -128,8 +217,13 @@ class JournalTrade {
       mfe: (json['mfe'] as num?)?.toDouble(),
       rMultiple: (json['rMultiple'] as num?)?.toDouble(),
       strategy: json['strategy'] as String?,
+      setup: json['setup'] as String?,
       tags: (json['tags'] as List?)?.cast<String>() ?? const [],
+      emotion: json['emotion'] as String?,
+      confidence: (json['confidence'] as num?)?.toInt(),
+      mistake: json['mistake'] as String?,
       notes: json['notes'] as String?,
+      slippage: (json['slippage'] as num?)?.toDouble(),
       status: JournalTradeStatus.values.byName(json['status'] as String),
       source: json['source'] as String? ?? 'delta',
     );

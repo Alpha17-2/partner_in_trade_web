@@ -62,4 +62,56 @@ void main() {
     expect(trades.length, 1);
     expect(trades.first.id, 't1');
   });
+
+  test('upsertTrade updates journal without full clear', () async {
+    final trade = JournalTrade(
+      id: 't1',
+      productId: 1,
+      symbol: 'BTCUSD',
+      side: JournalTradeSide.long,
+      entryTime: DateTime.utc(2025, 1, 1),
+      entryPrice: 100,
+      quantity: 1,
+      averageEntryPrice: 100,
+      grossPnl: 10,
+      fees: 1,
+      funding: 0,
+      netPnl: 9,
+      orderIds: const [],
+      fillIds: const ['f1'],
+      status: JournalTradeStatus.closed,
+      strategy: 'FVG',
+    );
+    await repo.saveTradesMerged([trade]);
+    await repo.upsertTrade(trade.copyWith(notes: 'updated'));
+    final loaded = await repo.getTrade('t1');
+    expect(loaded?.notes, 'updated');
+    expect(loaded?.strategy, 'FVG');
+  });
+
+  test('saveTradesMerged removes stale trades not in reconstruction', () async {
+    final t1 = JournalTrade(
+      id: 't1',
+      productId: 1,
+      symbol: 'A',
+      side: JournalTradeSide.long,
+      entryTime: DateTime.utc(2025, 1, 1),
+      entryPrice: 1,
+      quantity: 1,
+      averageEntryPrice: 1,
+      grossPnl: 0,
+      fees: 0,
+      funding: 0,
+      netPnl: 0,
+      orderIds: const [],
+      fillIds: const ['a'],
+      status: JournalTradeStatus.closed,
+    );
+    final t2 = t1.copyWith(id: 't2', symbol: 'B', fillIds: ['b']);
+    await repo.saveTradesMerged([t1, t2]);
+    await repo.saveTradesMerged([t1]);
+    final loaded = await repo.loadTrades();
+    expect(loaded.length, 1);
+    expect(loaded.first.id, 't1');
+  });
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../../models/journal_trade.dart';
@@ -70,18 +71,71 @@ class TradeJournalRepository {
   Future<List<JournalTrade>> loadTrades() async {
     await _ensureOpen();
     final box = Hive.box<String>(_tradesBox);
-    return box.values
-        .map((v) => JournalTrade.fromJson(jsonDecode(v) as Map<String, dynamic>))
-        .toList();
+    final trades = <JournalTrade>[];
+    var corrupt = 0;
+    for (final v in box.values) {
+      try {
+        trades.add(
+          JournalTrade.fromJson(jsonDecode(v) as Map<String, dynamic>),
+        );
+      } catch (e, st) {
+        corrupt++;
+        debugPrint('Skipped corrupt trade record: $e\n$st');
+      }
+    }
+    if (corrupt > 0) {
+      debugPrint('TradeJournalRepository: skipped $corrupt corrupt trade(s)');
+    }
+    return trades;
   }
 
-  Future<void> saveTrades(List<JournalTrade> trades) async {
+  Future<JournalTrade?> getTrade(String id) async {
+    await _ensureOpen();
+    final raw = Hive.box<String>(_tradesBox).get(id);
+    if (raw == null) return null;
+    try {
+      return JournalTrade.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> upsertTrade(JournalTrade trade) async {
+    await _ensureOpen();
+    await Hive.box<String>(_tradesBox).put(trade.id, jsonEncode(trade.toJson()));
+  }
+
+  Future<void> saveTradesMerged(List<JournalTrade> trades) async {
     await _ensureOpen();
     final box = Hive.box<String>(_tradesBox);
-    await box.clear();
+    final reconstructedIds = trades.map((t) => t.id).toSet();
     for (final t in trades) {
       await box.put(t.id, jsonEncode(t.toJson()));
     }
+    final keys = box.keys.cast<String>().toList();
+    for (final key in keys) {
+      if (!reconstructedIds.contains(key)) {
+        await box.delete(key);
+      }
+    }
+  }
+
+  Future<void> saveTrades(List<JournalTrade> trades) async {
+    await saveTradesMerged(trades);
+  }
+
+  Future<List<NormalizedFill>> loadFillsForTrade(JournalTrade trade) async {
+    if (trade.fillIds.isEmpty) return [];
+    final all = await loadAllFills();
+    final idSet = trade.fillIds.toSet();
+    final fills =
+        all.where((f) => idSet.contains(f.fillId)).toList();
+    fills.sort((a, b) {
+      final c = a.timestampMicros.compareTo(b.timestampMicros);
+      if (c != 0) return c;
+      return a.fillId.compareTo(b.fillId);
+    });
+    return fills;
   }
 
   Future<void> saveFunding(List<FundingRecord> records) async {

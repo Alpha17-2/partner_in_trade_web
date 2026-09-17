@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../../services/delta/delta_api_service.dart';
 import '../../../services/delta/delta_credentials.dart';
+import '../../trades/domain/journal_trade_merge.dart';
 import '../data/delta_activity_fetcher.dart';
 import '../data/trade_journal_repository.dart';
 import '../domain/normalized_fill.dart';
@@ -72,9 +73,14 @@ class SyncOrchestrator {
     final previousTrades = await _repository.loadTrades();
     final previousIds = previousTrades.map((t) => t.id).toSet();
 
-    final trades = _engine.reconstruct(
+    final reconstructed = _engine.reconstruct(
       fills: allFills,
       orderBrackets: orderBrackets,
+    );
+
+    final trades = mergeAllTradesAfterSync(
+      previous: previousTrades,
+      reconstructed: reconstructed,
     );
 
     final newIds = trades.map((t) => t.id).toSet();
@@ -92,7 +98,7 @@ class SyncOrchestrator {
       }
     }
 
-    await _repository.saveTrades(trades);
+    await _repository.saveTradesMerged(trades);
 
     var maxTs = meta.lastFillTimestampMicros ?? 0;
     for (final f in normalized) {
