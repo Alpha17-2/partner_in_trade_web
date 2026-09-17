@@ -88,7 +88,7 @@ class AppSidebar extends ConsumerWidget {
                 for (final route in AppRoutes.primary)
                   _NavItem(
                     route: route,
-                    selected: currentPath == route.path,
+                    selected: AppRoutes.matches(currentPath, route.path),
                     collapsed: collapsed,
                     onTap: () => context.go(route.path),
                   ),
@@ -101,7 +101,10 @@ class AppSidebar extends ConsumerWidget {
                 ),
                 _NavItem(
                   route: AppRoutes.settingsRoute,
-                  selected: currentPath == AppRoutes.settingsRoute.path,
+                  selected: AppRoutes.matches(
+                    currentPath,
+                    AppRoutes.settingsRoute.path,
+                  ),
                   collapsed: collapsed,
                   onTap: () => context.go(AppRoutes.settingsRoute.path),
                 ),

@@ -22,6 +22,7 @@ class DashboardPage extends ConsumerWidget {
     final byStrategy = ref.watch(strategyPerformanceProvider);
     final winLoss = ref.watch(winLossProvider);
     final recentTrades = ref.watch(recentTradesProvider);
+    final costs = ref.watch(dashboardCostSummaryProvider);
     final colors = context.appColors;
 
     return PageContainer(
@@ -146,6 +147,8 @@ class DashboardPage extends ConsumerWidget {
             children: [
               metricsSection,
               const SizedBox(height: AppSpacing.xl),
+              _costsRow(context, colors, costs),
+              const SizedBox(height: AppSpacing.xl),
               AppCard(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: EquityCurveChart(points: equity),
@@ -241,32 +244,40 @@ class DashboardPage extends ConsumerWidget {
           .toList(),
     );
 
-    final strategyTable = DataTableContainer(
-      columns: const [
-        DataTableColumn(label: 'Strategy', flex: 2),
-        DataTableColumn(label: 'Trades', align: TextAlign.end),
-        DataTableColumn(label: 'Win %', align: TextAlign.end),
-        DataTableColumn(label: 'Net P&L', align: TextAlign.end, flex: 2),
-      ],
-      rows: byStrategy
-          .map(
-            (row) => DataTableRow(
-              cells: [
-                Text(row.strategy),
-                Text(
-                  '${row.trades}',
-                  style: context.monoText(),
-                ),
-                Text(
-                  '${row.winRate.toStringAsFixed(1)}%',
-                  style: context.monoText(),
-                ),
-                PnlText(value: row.netPnl),
-              ],
+    final strategyTable = byStrategy.isEmpty
+        ? Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+            child: Text(
+              'No tagged strategies in this period.',
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           )
-          .toList(),
-    );
+        : DataTableContainer(
+            columns: const [
+              DataTableColumn(label: 'Strategy', flex: 2),
+              DataTableColumn(label: 'Trades', align: TextAlign.end),
+              DataTableColumn(label: 'Win %', align: TextAlign.end),
+              DataTableColumn(label: 'Net P&L', align: TextAlign.end, flex: 2),
+            ],
+            rows: byStrategy
+                .map(
+                  (row) => DataTableRow(
+                    cells: [
+                      Text(row.strategy),
+                      Text(
+                        '${row.trades}',
+                        style: context.monoText(),
+                      ),
+                      Text(
+                        '${row.winRate.toStringAsFixed(1)}%',
+                        style: context.monoText(),
+                      ),
+                      PnlText(value: row.netPnl),
+                    ],
+                  ),
+                )
+                .toList(),
+          );
 
     if (sideBySide) {
       return Row(
@@ -289,6 +300,45 @@ class DashboardPage extends ConsumerWidget {
         SectionHeader(title: 'Performance by Strategy'),
         const SizedBox(height: AppSpacing.lg),
         strategyTable,
+      ],
+    );
+  }
+
+  Widget _costsRow(
+    BuildContext context,
+    AppColors colors,
+    ({double fees, double funding, double grossPnl}) costs,
+  ) {
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Wrap(
+        spacing: AppSpacing.xxl,
+        runSpacing: AppSpacing.md,
+        children: [
+          _costMetric(context, colors, 'Total fees', costs.fees),
+          _costMetric(context, colors, 'Total funding', costs.funding),
+          _costMetric(context, colors, 'Gross P&L (ex fees)', costs.grossPnl),
+        ],
+      ),
+    );
+  }
+
+  Widget _costMetric(
+    BuildContext context,
+    AppColors colors,
+    String label,
+    double value,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: AppSpacing.xs),
+        PnlText(
+          value: value,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
       ],
     );
   }

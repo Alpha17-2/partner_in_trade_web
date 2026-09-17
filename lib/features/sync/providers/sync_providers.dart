@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import '../../../models/journal_trade.dart';
+import '../../analytics/providers/excursion_providers.dart';
 import '../../settings/providers/delta_connection_provider.dart';
+import '../../trades/providers/trades_providers.dart';
 import '../application/sync_orchestrator.dart';
 import '../data/trade_journal_repository.dart';
 
@@ -98,7 +101,13 @@ class SyncController extends Notifier<SyncState> {
             'Created ${result.createdTrades} trades · '
             'Updated ${result.updatedTrades} trades',
       );
+      ref.invalidate(tradeJournalRepositoryProvider);
       ref.read(journalTradesRevisionProvider.notifier).state++;
+      await ref.read(journalTradesProvider.notifier).reloadFromDisk();
+      final trades = ref.read(journalTradesProvider).valueOrNull ?? [];
+      unawaited(
+        ref.read(tradeExcursionControllerProvider.notifier).ensureMissing(trades),
+      );
     } catch (e) {
       state = SyncState(
         status: SyncStatus.error,
@@ -114,24 +123,3 @@ final syncControllerProvider =
 
 final syncLookbackDaysProvider = StateProvider<int>((ref) => 90);
 
-/// Bumped after a successful sync so [journalTradesProvider] reloads without
-/// watching [syncControllerProvider] (that caused a circular dependency).
-final journalTradesRevisionProvider = StateProvider<int>((ref) => 0);
-
-final journalTradesProvider = FutureProvider<List<JournalTrade>>((ref) async {
-  ref.watch(journalTradesRevisionProvider);
-  final creds = ref.read(deltaCredentialsStoreProvider).read();
-  String? storageKey;
-  if (creds != null) {
-    storageKey = TradeJournalRepository.storageKeyFor(
-      environment: creds.environment,
-      apiKey: creds.apiKey,
-    );
-  } else {
-    final box = await Hive.openBox<String>('app_global');
-    storageKey = box.get('lastJournalStorageKey');
-  }
-  if (storageKey == null) return [];
-  final repo = TradeJournalRepository(storageKey: storageKey);
-  return repo.loadTrades();
-});

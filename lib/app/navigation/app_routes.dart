@@ -17,8 +17,11 @@ abstract final class AppRoutes {
   static const trades = '/trades';
   static const analytics = '/analytics';
   static const strategies = '/strategies';
+  static const journal = '/journal';
   static const calendar = '/calendar';
   static const settings = '/settings';
+
+  static String journalDate(String yyyyMmDd) => '$journal/$yyyyMmDd';
 
   static const List<AppRoute> primary = [
     AppRoute(
@@ -42,6 +45,11 @@ abstract final class AppRoutes {
       icon: Icons.auto_graph_outlined,
     ),
     AppRoute(
+      path: journal,
+      label: 'Journal',
+      icon: Icons.menu_book_outlined,
+    ),
+    AppRoute(
       path: calendar,
       label: 'Calendar',
       icon: Icons.calendar_month_outlined,
@@ -55,4 +63,21 @@ abstract final class AppRoutes {
   );
 
   static const List<AppRoute> all = [...primary, settingsRoute];
+
+  static bool matches(String currentPath, String routePath) {
+    return currentPath == routePath ||
+        currentPath.startsWith('$routePath/');
+  }
+
+  static String? labelForPath(String path) {
+    AppRoute? best;
+    for (final route in all) {
+      if (matches(path, route.path)) {
+        if (best == null || route.path.length > best.path.length) {
+          best = route;
+        }
+      }
+    }
+    return best?.label;
+  }
 }

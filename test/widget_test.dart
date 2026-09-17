@@ -3,6 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:partner_in_trade_web/app/app.dart';
+import 'package:partner_in_trade_web/features/trades/providers/trades_providers.dart';
+import 'package:partner_in_trade_web/models/journal_trade.dart';
+
+class _EmptyJournalTradesNotifier extends JournalTradesNotifier {
+  @override
+  Future<List<JournalTrade>> build() async => [];
+}
 
 void main() {
   testWidgets('Dashboard loads with Trade Analyzer title', (tester) async {
@@ -12,8 +19,11 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      const ProviderScope(
-        child: PartnerInTradeApp(),
+      ProviderScope(
+        overrides: [
+          journalTradesProvider.overrideWith(_EmptyJournalTradesNotifier.new),
+        ],
+        child: const PartnerInTradeApp(),
       ),
     );
     await tester.pumpAndSettle();

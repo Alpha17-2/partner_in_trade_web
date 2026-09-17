@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers/app_ui_providers.dart';
+import '../../features/analytics/providers/analytics_providers.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/extensions/context_extensions.dart';
 import 'delta_connection_chip.dart';
@@ -55,6 +56,7 @@ class AppHeader extends ConsumerWidget {
             offset: const Offset(0, 40),
             onSelected: (preset) {
               ref.read(dashboardDateRangeProvider.notifier).state = preset;
+              syncDashboardPresetToAnalytics(ref, preset);
             },
             itemBuilder: (context) => DashboardDateRangePreset.values
                 .map(

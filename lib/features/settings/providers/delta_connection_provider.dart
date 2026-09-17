@@ -11,6 +11,9 @@ final deltaCredentialsStoreProvider = Provider<DeltaCredentialsStore>((ref) {
   return hiveDeltaCredentialsStore;
 });
 
+/// Bumped when credentials are saved or cleared so journal storage re-resolves.
+final deltaCredentialsVersionProvider = StateProvider<int>((ref) => 0);
+
 final deltaEnvironmentProvider = StateProvider<DeltaEnvironment>(
   (ref) => DeltaEnvironment.indiaProduction,
 );
@@ -46,6 +49,7 @@ class DeltaConnectionController extends Notifier<DeltaConnectionState> {
 
   void disconnect() {
     ref.read(deltaCredentialsStoreProvider).clear();
+    ref.read(deltaCredentialsVersionProvider.notifier).state++;
     state = const DeltaConnectionState(status: DeltaConnectionStatus.notConnected);
   }
 
@@ -70,6 +74,7 @@ class DeltaConnectionController extends Notifier<DeltaConnectionState> {
       environment: environment,
     );
     ref.read(deltaCredentialsStoreProvider).save(credentials);
+    ref.read(deltaCredentialsVersionProvider.notifier).state++;
     ref.read(deltaEnvironmentProvider.notifier).state = environment;
     state = const DeltaConnectionState(status: DeltaConnectionStatus.connected);
   }

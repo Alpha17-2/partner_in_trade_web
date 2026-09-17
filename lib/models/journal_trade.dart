@@ -27,9 +27,17 @@ class JournalTrade {
     this.mae,
     this.mfe,
     this.rMultiple,
+    this.profitCapture,
+    this.entryEfficiency,
+    this.exitEfficiency,
     this.strategy,
+    this.setup,
     this.tags = const [],
+    this.emotion,
+    this.confidence,
+    this.mistake,
     this.notes,
+    this.slippage,
     required this.status,
     this.source = 'delta',
     required this.productId,
@@ -59,11 +67,99 @@ class JournalTrade {
   final double? mae;
   final double? mfe;
   final double? rMultiple;
+  final double? profitCapture;
+  final double? entryEfficiency;
+  final double? exitEfficiency;
   final String? strategy;
+  final String? setup;
   final List<String> tags;
+  final String? emotion;
+  final int? confidence;
+  final String? mistake;
   final String? notes;
+  final double? slippage;
   final JournalTradeStatus status;
   final String source;
+
+  JournalTrade copyWith({
+    String? id,
+    int? productId,
+    String? symbol,
+    JournalTradeSide? side,
+    DateTime? entryTime,
+    DateTime? exitTime,
+    double? entryPrice,
+    double? exitPrice,
+    double? quantity,
+    double? averageEntryPrice,
+    double? averageExitPrice,
+    double? stopLoss,
+    double? takeProfit,
+    double? grossPnl,
+    double? fees,
+    double? funding,
+    double? netPnl,
+    Duration? duration,
+    double? leverage,
+    List<String>? orderIds,
+    List<String>? fillIds,
+    double? mae,
+    double? mfe,
+    double? rMultiple,
+    double? profitCapture,
+    double? entryEfficiency,
+    double? exitEfficiency,
+    String? strategy,
+    String? setup,
+    List<String>? tags,
+    String? emotion,
+    int? confidence,
+    String? mistake,
+    String? notes,
+    double? slippage,
+    JournalTradeStatus? status,
+    String? source,
+  }) {
+    return JournalTrade(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      symbol: symbol ?? this.symbol,
+      side: side ?? this.side,
+      entryTime: entryTime ?? this.entryTime,
+      exitTime: exitTime ?? this.exitTime,
+      entryPrice: entryPrice ?? this.entryPrice,
+      exitPrice: exitPrice ?? this.exitPrice,
+      quantity: quantity ?? this.quantity,
+      averageEntryPrice: averageEntryPrice ?? this.averageEntryPrice,
+      averageExitPrice: averageExitPrice ?? this.averageExitPrice,
+      stopLoss: stopLoss ?? this.stopLoss,
+      takeProfit: takeProfit ?? this.takeProfit,
+      grossPnl: grossPnl ?? this.grossPnl,
+      fees: fees ?? this.fees,
+      funding: funding ?? this.funding,
+      netPnl: netPnl ?? this.netPnl,
+      duration: duration ?? this.duration,
+      leverage: leverage ?? this.leverage,
+      orderIds: orderIds ?? this.orderIds,
+      fillIds: fillIds ?? this.fillIds,
+      mae: mae ?? this.mae,
+      mfe: mfe ?? this.mfe,
+      rMultiple: rMultiple ?? this.rMultiple,
+      profitCapture: profitCapture ?? this.profitCapture,
+      entryEfficiency: entryEfficiency ?? this.entryEfficiency,
+      exitEfficiency: exitEfficiency ?? this.exitEfficiency,
+      strategy: strategy ?? this.strategy,
+      setup: setup ?? this.setup,
+      tags: tags ?? this.tags,
+      emotion: emotion ?? this.emotion,
+      confidence: confidence ?? this.confidence,
+      mistake: mistake ?? this.mistake,
+      notes: notes ?? this.notes,
+      slippage: slippage ?? this.slippage,
+      status: status ?? this.status,
+      source: source ?? this.source,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -90,9 +186,17 @@ class JournalTrade {
         'mae': mae,
         'mfe': mfe,
         'rMultiple': rMultiple,
+        'profitCapture': profitCapture,
+        'entryEfficiency': entryEfficiency,
+        'exitEfficiency': exitEfficiency,
         'strategy': strategy,
+        'setup': setup,
         'tags': tags,
+        'emotion': emotion,
+        'confidence': confidence,
+        'mistake': mistake,
         'notes': notes,
+        'slippage': slippage,
         'status': status.name,
         'source': source,
       };
@@ -127,9 +231,17 @@ class JournalTrade {
       mae: (json['mae'] as num?)?.toDouble(),
       mfe: (json['mfe'] as num?)?.toDouble(),
       rMultiple: (json['rMultiple'] as num?)?.toDouble(),
+      profitCapture: (json['profitCapture'] as num?)?.toDouble(),
+      entryEfficiency: (json['entryEfficiency'] as num?)?.toDouble(),
+      exitEfficiency: (json['exitEfficiency'] as num?)?.toDouble(),
       strategy: json['strategy'] as String?,
+      setup: json['setup'] as String?,
       tags: (json['tags'] as List?)?.cast<String>() ?? const [],
+      emotion: json['emotion'] as String?,
+      confidence: (json['confidence'] as num?)?.toInt(),
+      mistake: json['mistake'] as String?,
       notes: json['notes'] as String?,
+      slippage: (json['slippage'] as num?)?.toDouble(),
       status: JournalTradeStatus.values.byName(json['status'] as String),
       source: json['source'] as String? ?? 'delta',
     );
