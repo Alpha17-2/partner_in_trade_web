@@ -8,8 +8,10 @@ import '../../../shared/widgets/page_container.dart';
 import '../../../shared/widgets/pnl_text.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../dashboard/mock/dashboard_mock_models.dart';
+import '../application/trade_insights_service.dart';
 import '../domain/performance_snapshot.dart';
 import '../providers/analytics_providers.dart';
+import '../providers/excursion_providers.dart';
 import 'widgets/analytics_distribution_chart.dart';
 import 'widgets/analytics_drawdown_chart.dart';
 import 'widgets/analytics_equity_curve_chart.dart';
@@ -49,7 +51,7 @@ class AnalyticsPage extends ConsumerWidget {
               ),
             ] else ...[
               const SizedBox(height: AppSpacing.xl),
-              ..._contentAfterOverview(context, snap),
+              ..._contentAfterOverview(context, ref, snap),
             ],
           ],
         ),
@@ -57,7 +59,11 @@ class AnalyticsPage extends ConsumerWidget {
     );
   }
 
-  List<Widget> _contentAfterOverview(BuildContext context, PerformanceSnapshot snap) {
+  List<Widget> _contentAfterOverview(
+    BuildContext context,
+    WidgetRef ref,
+    PerformanceSnapshot snap,
+  ) {
     final s = snap.statistics;
     return [
       AppCard(
@@ -89,6 +95,8 @@ class AnalyticsPage extends ConsumerWidget {
       _drawdownSection(context, snap),
       const SizedBox(height: AppSpacing.xl),
       _streaks(context, snap.streaks),
+      const SizedBox(height: AppSpacing.xl),
+      _advancedAnalysis(context, ref, snap),
     ];
   }
 
@@ -304,6 +312,101 @@ class AnalyticsPage extends ConsumerWidget {
           _stat('Current loss streak', '${streaks.currentLossStreak}'),
           _stat('Longest win streak', '${streaks.longestWinStreak}'),
           _stat('Longest loss streak', '${streaks.longestLossStreak}'),
+        ],
+      ),
+    );
+  }
+
+  Widget _advancedAnalysis(
+    BuildContext context,
+    WidgetRef ref,
+    PerformanceSnapshot snap,
+  ) {
+    final trades = ref.watch(completedTradesForAnalyticsProvider);
+    ref.watch(tradeExcursionControllerProvider);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(tradeExcursionControllerProvider.notifier).ensureMissing(trades);
+    });
+    final service = ref.watch(tradeAnalyticsServiceProvider);
+    final mfe = trades.map((t) => t.mfe).whereType<double>().toList();
+    final mae = trades.map((t) => t.mae).whereType<double>().toList();
+    final capture =
+        trades.map((t) => t.profitCapture).whereType<double>().toList();
+    final holds = trades
+        .map((t) => t.duration?.inSeconds.toDouble())
+        .whereType<double>()
+        .toList();
+    final insights = TradeInsightsService().observations(
+      trades: trades,
+      snapshot: snap,
+    );
+
+    String avg(List<double> values, {bool percent = false, bool r = false}) {
+      if (values.isEmpty) return 'N/A';
+      final v = values.reduce((a, b) => a + b) / values.length;
+      if (percent) return '${(v * 100).toStringAsFixed(0)}%';
+      if (r) return '${v.toStringAsFixed(2)}R';
+      return v.toStringAsFixed(2);
+    }
+
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SectionHeader(title: 'Advanced analysis'),
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.xl,
+            runSpacing: AppSpacing.md,
+            children: [
+              _stat('Average MFE', avg(mfe, r: true)),
+              _stat('Average MAE', avg(mae, r: true)),
+              _stat('Average Profit Capture', avg(capture, percent: true)),
+            ],
+          ),
+          if (insights.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            const SectionHeader(title: 'Observations'),
+            const SizedBox(height: AppSpacing.sm),
+            for (final line in insights)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(line),
+              ),
+          ],
+          if (mfe.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            AnalyticsDistributionChart(
+              bins: service.histogram(mfe),
+              kind: DistributionKind.rMultiple,
+              title: 'MFE distribution',
+            ),
+          ],
+          if (mae.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            AnalyticsDistributionChart(
+              bins: service.histogram(mae),
+              kind: DistributionKind.netPnl,
+              title: 'MAE distribution',
+            ),
+          ],
+          if (capture.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            AnalyticsDistributionChart(
+              bins: service.histogram(capture.map((v) => v * 100).toList()),
+              kind: DistributionKind.rMultiple,
+              title: 'Profit capture distribution',
+            ),
+          ],
+          if (holds.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            AnalyticsDistributionChart(
+              bins: service.histogram(holds.map((s) => s / 60).toList()),
+              kind: DistributionKind.rMultiple,
+              title: 'Holding time distribution (minutes)',
+            ),
+          ],
         ],
       ),
     );

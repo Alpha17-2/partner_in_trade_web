@@ -63,4 +63,21 @@ void main() {
     expect(merged.first.strategy, 'Sweep');
     expect(merged.first.id, 'new');
   });
+
+  test('preserves excursion analysis across sync', () {
+    final prev = _trade(id: 'a').copyWith(
+      mfe: 2.1,
+      mae: -0.4,
+      profitCapture: 0.5,
+      entryEfficiency: 0.8,
+      exitEfficiency: 0.6,
+    );
+    final synced = _trade(id: 'a', netPnl: 20);
+    final merged = mergeExchangeData(previous: prev, synced: synced);
+    expect(merged.mfe, 2.1);
+    expect(merged.mae, -0.4);
+    expect(merged.profitCapture, 0.5);
+    expect(merged.entryEfficiency, 0.8);
+    expect(merged.exitEfficiency, 0.6);
+  });
 }

@@ -27,6 +27,9 @@ class JournalTrade {
     this.mae,
     this.mfe,
     this.rMultiple,
+    this.profitCapture,
+    this.entryEfficiency,
+    this.exitEfficiency,
     this.strategy,
     this.setup,
     this.tags = const [],
@@ -64,6 +67,9 @@ class JournalTrade {
   final double? mae;
   final double? mfe;
   final double? rMultiple;
+  final double? profitCapture;
+  final double? entryEfficiency;
+  final double? exitEfficiency;
   final String? strategy;
   final String? setup;
   final List<String> tags;
@@ -100,6 +106,9 @@ class JournalTrade {
     double? mae,
     double? mfe,
     double? rMultiple,
+    double? profitCapture,
+    double? entryEfficiency,
+    double? exitEfficiency,
     String? strategy,
     String? setup,
     List<String>? tags,
@@ -136,6 +145,9 @@ class JournalTrade {
       mae: mae ?? this.mae,
       mfe: mfe ?? this.mfe,
       rMultiple: rMultiple ?? this.rMultiple,
+      profitCapture: profitCapture ?? this.profitCapture,
+      entryEfficiency: entryEfficiency ?? this.entryEfficiency,
+      exitEfficiency: exitEfficiency ?? this.exitEfficiency,
       strategy: strategy ?? this.strategy,
       setup: setup ?? this.setup,
       tags: tags ?? this.tags,
@@ -174,6 +186,9 @@ class JournalTrade {
         'mae': mae,
         'mfe': mfe,
         'rMultiple': rMultiple,
+        'profitCapture': profitCapture,
+        'entryEfficiency': entryEfficiency,
+        'exitEfficiency': exitEfficiency,
         'strategy': strategy,
         'setup': setup,
         'tags': tags,
@@ -216,6 +231,9 @@ class JournalTrade {
       mae: (json['mae'] as num?)?.toDouble(),
       mfe: (json['mfe'] as num?)?.toDouble(),
       rMultiple: (json['rMultiple'] as num?)?.toDouble(),
+      profitCapture: (json['profitCapture'] as num?)?.toDouble(),
+      entryEfficiency: (json['entryEfficiency'] as num?)?.toDouble(),
+      exitEfficiency: (json['exitEfficiency'] as num?)?.toDouble(),
       strategy: json['strategy'] as String?,
       setup: json['setup'] as String?,
       tags: (json['tags'] as List?)?.cast<String>() ?? const [],

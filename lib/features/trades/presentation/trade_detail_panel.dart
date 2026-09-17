@@ -6,6 +6,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/extensions/context_extensions.dart';
 import '../../../models/journal_trade.dart';
 import '../../../shared/widgets/pnl_text.dart';
+import '../../analytics/providers/excursion_providers.dart';
 import '../application/trade_timeline_builder.dart';
 import '../application/trades_filter_sort.dart';
 import '../domain/journal_presets.dart';
@@ -32,6 +33,9 @@ class _TradeDetailPanelState extends ConsumerState<TradeDetailPanel> {
     _draft = widget.trade;
     _notesController.text = widget.trade.notes ?? '';
     _rController.text = widget.trade.rMultiple?.toString() ?? '';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(tradeExcursionControllerProvider.notifier).ensure(widget.trade);
+    });
   }
 
   @override
@@ -41,6 +45,9 @@ class _TradeDetailPanelState extends ConsumerState<TradeDetailPanel> {
       _draft = widget.trade;
       _notesController.text = widget.trade.notes ?? '';
       _rController.text = widget.trade.rMultiple?.toString() ?? '';
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(tradeExcursionControllerProvider.notifier).ensure(widget.trade);
+      });
     }
     // Same trade: keep local draft; exchange fields refresh only after sync.
   }
@@ -131,6 +138,28 @@ class _TradeDetailPanelState extends ConsumerState<TradeDetailPanel> {
             _statRow(
               'Leverage',
               widget.trade.leverage?.toStringAsFixed(1) ?? '—',
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            _sectionTitle(context, 'Trade performance'),
+            _statRow('MFE', _fmtR(widget.trade.mfe)),
+            _statRow('MAE', _fmtR(widget.trade.mae)),
+            _statRow(
+              'Profit Capture',
+              widget.trade.profitCapture == null
+                  ? 'N/A'
+                  : '${(widget.trade.profitCapture! * 100).toStringAsFixed(0)}%',
+            ),
+            _statRow(
+              'Duration',
+              formatTradeDuration(widget.trade.duration),
+            ),
+            _statRow(
+              'Entry Efficiency',
+              _fmtPct(widget.trade.entryEfficiency),
+            ),
+            _statRow(
+              'Exit Efficiency',
+              _fmtPct(widget.trade.exitEfficiency),
             ),
             const SizedBox(height: AppSpacing.lg),
             _sectionTitle(context, 'Costs'),
@@ -347,4 +376,15 @@ class _TradeDetailPanelState extends ConsumerState<TradeDetailPanel> {
   String _fmt(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')} '
       '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
+  String _fmtR(double? v) {
+    if (v == null) return 'N/A';
+    final sign = v > 0 ? '+' : '';
+    return '$sign${v.toStringAsFixed(2)}R';
+  }
+
+  String _fmtPct(double? v) {
+    if (v == null) return 'N/A';
+    return '${(v * 100).toStringAsFixed(0)}%';
+  }
 }

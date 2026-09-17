@@ -27,8 +27,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 
   String? _headerTitle(String path) {
-    final route = AppRoutes.all.where((r) => r.path == path).firstOrNull;
-    return route?.label;
+    return AppRoutes.labelForPath(path);
   }
 
   void _onRefresh() {

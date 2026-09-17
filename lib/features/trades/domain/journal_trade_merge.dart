@@ -17,6 +17,9 @@ JournalTrade mergeExchangeData({
     rMultiple: previous.rMultiple ?? synced.rMultiple,
     mae: previous.mae ?? synced.mae,
     mfe: previous.mfe ?? synced.mfe,
+    profitCapture: previous.profitCapture ?? synced.profitCapture,
+    entryEfficiency: previous.entryEfficiency ?? synced.entryEfficiency,
+    exitEfficiency: previous.exitEfficiency ?? synced.exitEfficiency,
   );
 }
 

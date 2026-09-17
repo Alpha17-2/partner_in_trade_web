@@ -11,19 +11,22 @@ class AnalyticsDistributionChart extends StatelessWidget {
     super.key,
     required this.bins,
     required this.kind,
+    this.title,
   });
 
   final List<DistributionBin> bins;
   final DistributionKind kind;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     if (bins.isEmpty) return const SizedBox.shrink();
 
-    final title = kind == DistributionKind.rMultiple
-        ? 'R-multiple distribution'
-        : 'P&L distribution';
+    final title = this.title ??
+        (kind == DistributionKind.rMultiple
+            ? 'R-multiple distribution'
+            : 'P&L distribution');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

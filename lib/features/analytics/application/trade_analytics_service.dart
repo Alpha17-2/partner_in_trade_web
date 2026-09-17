@@ -368,11 +368,14 @@ class TradeAnalyticsService {
     return DateTime(monday.year, monday.month, monday.day);
   }
 
-  List<DistributionBin> _histogramNet(List<double> values) {
+  List<DistributionBin> histogram(List<double> values, {int bins = 8}) {
+    return _histogramNet(values, bins: bins);
+  }
+
+  List<DistributionBin> _histogramNet(List<double> values, {int bins = 8}) {
     if (values.isEmpty) return [];
     final min = values.reduce(math.min);
     final max = values.reduce(math.max);
-    const bins = 8;
     if (min == max) {
       return [DistributionBin(label: min.toStringAsFixed(0), count: values.length, midValue: min)];
     }

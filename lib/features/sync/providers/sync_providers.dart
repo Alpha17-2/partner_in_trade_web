@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../analytics/providers/excursion_providers.dart';
 import '../../settings/providers/delta_connection_provider.dart';
 import '../../trades/providers/trades_providers.dart';
 import '../application/sync_orchestrator.dart';
@@ -101,6 +104,10 @@ class SyncController extends Notifier<SyncState> {
       ref.invalidate(tradeJournalRepositoryProvider);
       ref.read(journalTradesRevisionProvider.notifier).state++;
       await ref.read(journalTradesProvider.notifier).reloadFromDisk();
+      final trades = ref.read(journalTradesProvider).valueOrNull ?? [];
+      unawaited(
+        ref.read(tradeExcursionControllerProvider.notifier).ensureMissing(trades),
+      );
     } catch (e) {
       state = SyncState(
         status: SyncStatus.error,

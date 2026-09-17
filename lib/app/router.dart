@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../features/analytics/presentation/analytics_page.dart';
 import '../features/calendar/presentation/calendar_page.dart';
 import '../features/dashboard/presentation/dashboard_page.dart';
+import '../features/journal/presentation/daily_journal_page.dart';
+import '../features/journal/presentation/journal_calendar_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../features/strategies/presentation/strategies_page.dart';
 import '../features/trades/presentation/trades_page.dart';
@@ -50,6 +52,21 @@ GoRouter createAppRouter() {
             pageBuilder: (context, state) => const NoTransitionPage(
               child: StrategiesPage(),
             ),
+          ),
+          GoRoute(
+            path: AppRoutes.journal,
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: JournalCalendarPage(),
+            ),
+          ),
+          GoRoute(
+            path: '${AppRoutes.journal}/:date',
+            pageBuilder: (context, state) {
+              final date = state.pathParameters['date'] ?? '';
+              return NoTransitionPage(
+                child: DailyJournalPage(dateKey: date),
+              );
+            },
           ),
           GoRoute(
             path: AppRoutes.calendar,
