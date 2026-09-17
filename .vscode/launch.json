@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "partner_in_trade_web (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "toolEnv": {
+        "CHROME_EXECUTABLE": "/usr/bin/google-chrome-stable"
+      }
+    }
+  ]
+}
